@@ -1,0 +1,23 @@
+# PyTorch 需单独安装（RTX 50 系显卡要 CUDA 12.8 版）：
+#   pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
+demucs
+beat-this
+librosa
+soundfile
+imageio-ffmpeg
+pretty_midi
+einops
+soxr
+rotary-embedding-torch
+tqdm
+onnxruntime
+resampy
+mir_eval
+scipy
+fastapi
+uvicorn[standard]
+python-multipart
+# 以下两个用 --no-deps 安装（见 安装.bat）：
+#   basic-pitch                 音高识别（NeuralNote 用的同一个模型）
+#   vendor/ADTOF-pytorch        鼓识别模型，源码和权重已放在本文件夹
+# 仅开发测试用：playwright

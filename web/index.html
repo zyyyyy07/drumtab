@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鼓谱 · 自动扒谱</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23c2410c'/%3E%3Cellipse cx='16' cy='13' rx='10' ry='4' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M6 13v7c0 2.2 4.5 4 10 4s10-1.8 10-4v-7' fill='none' stroke='%23fff' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><ellipse cx="16" cy="12" rx="12" ry="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 12v9c0 2.8 5.4 5 12 5s12-2.2 12-5v-9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 16.5v8.6M22 16.5v8.6M16 17v9" stroke="currentColor" stroke-width="1.5"/></svg>
+      <div><b>鼓谱</b><span>自动扒谱</span></div>
+    </div>
+    <label id="drop" tabindex="0">
+      <input id="file" type="file" accept="audio/*,video/mp4,.mp3,.wav,.flac,.m4a,.aac,.ogg,.opus,.wma,.ape,.aiff" multiple hidden>
+      <strong>上传音频</strong>
+      <span>拖到这里，或点击选择文件</span>
+    </label>
+    <div class="side-title">曲库</div>
+    <ul id="list"></ul>
+  </aside>
+
+  <main id="main">
+    <section id="empty" class="state">
+      <h1>把歌拖进来，拿到整套乐谱</h1>
+      <ol>
+        <li><b>分轨</b>自动分离鼓、贝斯、吉他、键盘、人声</li>
+        <li><b>识谱</b>每件乐器各出一份分谱，另有总谱</li>
+        <li><b>跟练</b>播放原曲时当前小节高亮、自动翻滚，可减速、可去鼓</li>
+        <li><b>导出</b>分谱和总谱都能按 A4 打印或存成 PDF</li>
+      </ol>
+    </section>
+
+    <section id="working" class="state" hidden>
+      <h1 id="w-title"></h1>
+      <div class="bar"><i id="w-bar"></i></div>
+      <p id="w-msg"></p>
+      <p class="hint">一首 4 分钟的歌大约需要 1～2 分钟。可以继续上传别的歌，会排队处理。</p>
+      <button id="w-retry" class="btn" hidden>重试</button>
+    </section>
+
+    <section id="viewer" hidden>
+      <header id="top">
+        <div class="title-row">
+          <h1 id="title" contenteditable="plaintext-only" spellcheck="false" title="点击可改歌名"></h1>
+          <div id="chips"></div>
+          <div class="grow"></div>
+          <button class="btn" id="btn-fix">校正</button>
+          <div class="seg" title="缩放">
+            <button id="zoom-out" aria-label="缩小">−</button><span id="zoom-val">100%</span><button id="zoom-in" aria-label="放大">＋</button>
+          </div>
+          <button class="btn" id="btn-export">导出 ▾</button>
+          <button class="btn primary" id="btn-print">打印 / 存为 PDF（A4）</button>
+        </div>
+        <nav id="tracks" role="tablist"></nav>
+      </header>
+
+      <div id="menu-export" class="pop" hidden>
+        <button data-x="gp">Guitar Pro 文件（.gp）</button>
+        <button data-x="midi">MIDI 文件（.mid）</button>
+        <button data-x="atex">alphaTex 文本（.atex）</button>
+      </div>
+
+      <div id="panel-fix" class="pop wide" hidden>
+        <h3>校正记谱</h3>
+        <p class="hint">识别出的音不变，只调整怎么记到谱面上。几秒钟出新谱。</p>
+        <div class="row"><label>小节线位置</label>
+          <div class="seg"><button data-shift="-1">◀ 提前一拍</button><span id="shift-val">0</span><button data-shift="1">推后一拍 ▶</button></div></div>
+        <div class="row"><label for="opt-bpb">每小节拍数</label>
+          <select id="opt-bpb"><option value="0">自动</option><option value="2">2 拍</option><option value="3">3 拍</option><option value="4">4 拍</option><option value="5">5 拍</option><option value="6">6 拍</option><option value="7">7 拍</option></select></div>
+        <div class="row"><label for="opt-ts">速度记法</label>
+          <select id="opt-ts"><option value="0.5">减半（音符更疏）</option><option value="1">按识别结果</option><option value="2">翻倍（音符更密）</option></select></div>
+        <div class="row"><label for="opt-sens">鼓识别灵敏度</label>
+          <input id="opt-sens" type="range" min="-1" max="1" step="0.1"><span id="sens-val"></span></div>
+        <div class="row"><label>细节</label>
+          <label class="chk"><input id="opt-ghost" type="checkbox"> 标出军鼓鬼音</label>
+          <label class="chk"><input id="opt-open" type="checkbox"> 区分开镲</label></div>
+        <div class="row end"><button class="btn" id="fix-cancel">取消</button><button class="btn primary" id="fix-apply">重新出谱</button></div>
+      </div>
+
+      <div id="scroll">
+        <details id="legend" hidden>
+          <summary>鼓谱图例</summary>
+          <div id="legend-at"></div>
+        </details>
+        <div id="paper"><div id="at"></div></div>
+        <div id="loading" hidden>正在排版…</div>
+      </div>
+
+      <footer id="transport">
+        <button id="play" class="play" aria-label="播放">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path id="play-ico" d="M7 4l14 8-14 8z" fill="currentColor"/></svg>
+        </button>
+        <div class="time"><span id="t-cur">0:00</span> / <span id="t-dur">0:00</span></div>
+        <input id="seek" type="range" min="0" max="1000" value="0" aria-label="进度">
+        <div class="barno" id="barno"></div>
+        <label class="mini">速度
+          <select id="speed"><option value="0.5">50%</option><option value="0.6">60%</option><option value="0.7">70%</option><option value="0.8">80%</option><option value="0.9">90%</option><option value="1" selected>100%</option></select>
+        </label>
+        <label class="mini">听
+          <select id="listen"></select>
+        </label>
+        <label class="mini chk"><input id="follow" type="checkbox" checked> 跟随滚动</label>
+      </footer>
+      <audio id="audio" preload="auto"></audio>
+    </section>
+  </main>
+</div>
+<div id="toast" hidden></div>
+<script src="/alphatab/alphaTab.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

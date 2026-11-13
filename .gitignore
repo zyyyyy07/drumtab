@@ -1,0 +1,18 @@
+# 运行环境与大文件（安装.bat 会重新生成/下载）
+.venv/
+.pip-cache/
+models/
+vendor/
+__pycache__/
+*.pyc
+
+# 用户上传的歌曲和处理结果（含受版权保护的音频，不上传）
+projects/
+
+# 开发测试用数据（MDB Drums 数据集为 CC BY-NC-SA，自行下载）
+dev/testdata/
+dev/cache/
+dev/shots/
+dev/alphatex-docs/
+dev/*.mp3
+dev/*.wav

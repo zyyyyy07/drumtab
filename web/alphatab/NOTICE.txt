@@ -1,0 +1,7 @@
+alphaTab.min.js —— alphaTab 1.9.0（@coderline/alphatab）
+  https://github.com/CoderLine/alphaTab
+  许可：Mozilla Public License 2.0（MPL-2.0），https://mozilla.org/MPL/2.0/
+  本项目未修改其源码。
+
+font/Bravura.* —— Bravura 乐谱字体（Steinberg）
+  许可：SIL Open Font License 1.1，见 font/Bravura-OFL.txt
